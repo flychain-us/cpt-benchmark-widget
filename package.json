@@ -1,0 +1,15 @@
+{
+  "name": "cpt-checker",
+  "version": "1.0.0",
+  "description": "Compare your CPT code billing rates against state averages.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npx serve . -l 3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "serve": "^14.2.4"
+  }
+}

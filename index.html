@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Compare your CPT code billing rates against state averages. A tool for healthcare clinicians to benchmark their pricing.">
+    <title>CPT Benchmark | Flychain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header header-centered">
+            <a href="https://flychain.us" target="_blank" rel="noopener noreferrer" class="header-brand">
+                <img src="flychain-logo-hq.png" alt="FlyChain" class="flychain-logo-centered">
+                <span class="brand-subtitle">CPT Benchmark</span>
+            </a>
+        </header>
+
+        <!-- Hero Section -->
+        <main class="main">
+            <section class="hero">
+                <h1 class="hero-title">
+                    Are you billing <span class="highlight">competitively</span>?
+                </h1>
+                <p class="hero-subtitle">
+                    Compare your CPT code rates against state averages in seconds.
+                </p>
+            </section>
+
+            <!-- Input Card -->
+            <section class="input-card">
+                <div class="input-group">
+                    <label for="zipcode" class="input-label">
+                        <span class="label-icon">📍</span>
+                        Your Zipcode
+                    </label>
+                    <input type="text" id="zipcode" class="input-field" placeholder="e.g. 10001" maxlength="5"
+                        inputmode="numeric" autocomplete="postal-code">
+                    <div class="state-detected" id="state-detected"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="cpt-code" class="input-label">
+                        <span class="label-icon">🏥</span>
+                        CPT Code
+                    </label>
+                    <div class="cpt-input-wrapper">
+                        <input type="text" id="cpt-code" class="input-field" placeholder="e.g. 99213" maxlength="5"
+                            inputmode="numeric" autocomplete="off">
+                        <div class="cpt-dropdown" id="cpt-dropdown"></div>
+                    </div>
+                    <div class="cpt-description" id="cpt-description"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="billing-amount" class="input-label">
+                        <span class="label-icon">💰</span>
+                        Your Billing Amount
+                    </label>
+                    <div class="currency-input">
+                        <span class="currency-symbol">$</span>
+                        <input type="text" id="billing-amount" class="input-field input-currency" placeholder="0.00"
+                            inputmode="decimal">
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="compare-btn" disabled>
+                    <span class="btn-text">Compare Rates</span>
+                    <span class="btn-icon">→</span>
+                </button>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section hidden" id="results">
+                <div class="results-card">
+                    <div class="results-header">
+                        <h2 class="results-title">Your Benchmark</h2>
+                        <span class="results-state" id="results-state"></span>
+                    </div>
+
+                    <div class="gauge-container">
+                        <div class="gauge">
+                            <div class="gauge-fill" id="gauge-fill"></div>
+                            <div class="gauge-marker" id="gauge-marker">
+                                <div class="marker-line"></div>
+                                <div class="marker-label" id="marker-label"><span class="marker-emoji"
+                                        id="marker-emoji">📍</span> You</div>
+                            </div>
+                        </div>
+                        <div class="gauge-labels">
+                            <span class="gauge-min">$0</span>
+                            <span class="gauge-avg" id="gauge-avg">State Avg</span>
+                            <span class="gauge-max" id="gauge-max">$200</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-cards">
+                        <div class="comparison-card your-rate">
+                            <span class="comparison-label">Your Rate</span>
+                            <span class="comparison-value" id="your-rate">$0</span>
+                        </div>
+                        <div class="comparison-card state-avg">
+                            <span class="comparison-label">State Average</span>
+                            <span class="comparison-value" id="state-avg-value">$0</span>
+                        </div>
+                    </div>
+
+                    <div class="insight-card" id="insight-card">
+                        <div class="insight-icon" id="insight-icon">📊</div>
+                        <div class="insight-content">
+                            <span class="insight-title" id="insight-title">Analysis</span>
+                            <span class="insight-text" id="insight-text">Enter your details above to see how you
+                                compare.</span>
+                        </div>
+                    </div>
+
+                    <!-- FlyChain CTA Funnel -->
+                    <div class="flychain-cta" id="flychain-cta">
+                        <div class="cta-glow"></div>
+                        <div class="cta-content">
+                            <div class="cta-text">
+                                <span class="cta-headline" id="cta-headline">Want to optimize your billing?</span>
+                                <span class="cta-subtext" id="cta-subtext">Join thousands of healthcare providers using
+                                    FlyChain to maximize their revenue.</span>
+                            </div>
+                            <a href="https://flychain.us" target="_blank" rel="noopener noreferrer" class="cta-button">
+                                <span>Get Started</span>
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <button class="btn-secondary" id="reset-btn">
+                        <span class="btn-icon">←</span>
+                        <span class="btn-text">Check Another</span>
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by <strong>FlyChain</strong> • Data based on Medicare Fee Schedule averages</p>
+        </footer>
+    </div>
+
+    <script src="data/cpt-averages.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

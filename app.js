@@ -1,0 +1,259 @@
+// CPT Checker App
+document.addEventListener('DOMContentLoaded', () => {
+    const zipcodeInput = document.getElementById('zipcode');
+    const cptInput = document.getElementById('cpt-code');
+    const billingInput = document.getElementById('billing-amount');
+    const stateDetected = document.getElementById('state-detected');
+    const cptDropdown = document.getElementById('cpt-dropdown');
+    const cptDescription = document.getElementById('cpt-description');
+    const compareBtn = document.getElementById('compare-btn');
+    const resultsSection = document.getElementById('results');
+    const inputCard = document.querySelector('.input-card');
+    const resetBtn = document.getElementById('reset-btn');
+
+    let selectedState = null;
+    let selectedCpt = null;
+
+    // State lookup from zipcode
+    function getStateFromZip(zip) {
+        if (zip.length < 3) return null;
+        const prefix = zip.substring(0, 3);
+        return ZIP_TO_STATE[prefix] || null;
+    }
+
+    // Format currency
+    function formatCurrency(amount) {
+        return '$' + parseFloat(amount).toFixed(2);
+    }
+
+    // Validate form and enable button
+    function validateForm() {
+        const zipValid = selectedState !== null;
+        const cptValid = selectedCpt !== null;
+        const billingValid = parseFloat(billingInput.value) > 0;
+        compareBtn.disabled = !(zipValid && cptValid && billingValid);
+    }
+
+    // Zipcode input handler
+    zipcodeInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace(/\D/g, '');
+        e.target.value = value;
+
+        if (value.length >= 3) {
+            selectedState = getStateFromZip(value);
+            if (selectedState) {
+                const stateName = STATE_NAMES[selectedState] || selectedState;
+                stateDetected.textContent = `📍 ${stateName}`;
+                stateDetected.classList.add('visible');
+                zipcodeInput.classList.add('valid');
+                zipcodeInput.classList.remove('invalid');
+            } else {
+                stateDetected.textContent = 'State not found';
+                stateDetected.classList.add('visible');
+                zipcodeInput.classList.add('invalid');
+                zipcodeInput.classList.remove('valid');
+                selectedState = null;
+            }
+        } else {
+            stateDetected.classList.remove('visible');
+            zipcodeInput.classList.remove('valid', 'invalid');
+            selectedState = null;
+        }
+        validateForm();
+    });
+
+    // CPT code input handler
+    cptInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace(/\D/g, '');
+        e.target.value = value;
+        selectedCpt = null;
+        cptDescription.classList.remove('visible');
+        cptInput.classList.remove('valid', 'invalid');
+
+        if (value.length >= 2) {
+            const matches = Object.keys(CPT_DATA).filter(code => code.startsWith(value));
+            if (matches.length > 0 && value.length < 5) {
+                renderCptDropdown(matches);
+                cptDropdown.classList.add('visible');
+            } else {
+                cptDropdown.classList.remove('visible');
+            }
+
+            if (CPT_DATA[value]) {
+                selectCpt(value);
+            }
+        } else {
+            cptDropdown.classList.remove('visible');
+        }
+        validateForm();
+    });
+
+    function renderCptDropdown(codes) {
+        cptDropdown.innerHTML = codes.map(code => `
+            <div class="cpt-option" data-code="${code}">
+                <span class="cpt-option-code">${code}</span>
+                <span class="cpt-option-desc">${CPT_DATA[code].description}</span>
+            </div>
+        `).join('');
+
+        cptDropdown.querySelectorAll('.cpt-option').forEach(option => {
+            option.addEventListener('click', () => {
+                selectCpt(option.dataset.code);
+                cptDropdown.classList.remove('visible');
+            });
+        });
+    }
+
+    function selectCpt(code) {
+        selectedCpt = code;
+        cptInput.value = code;
+        cptDescription.textContent = CPT_DATA[code].description;
+        cptDescription.classList.add('visible');
+        cptInput.classList.add('valid');
+        cptDropdown.classList.remove('visible');
+        validateForm();
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+        if (!cptInput.contains(e.target) && !cptDropdown.contains(e.target)) {
+            cptDropdown.classList.remove('visible');
+        }
+    });
+
+    // Billing amount input handler
+    billingInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/[^\d.]/g, '');
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+        }
+        if (parts[1] && parts[1].length > 2) {
+            value = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+        e.target.value = value;
+        validateForm();
+    });
+
+    // Compare button handler
+    compareBtn.addEventListener('click', () => {
+        if (compareBtn.disabled) return;
+        showResults();
+    });
+
+    function showResults() {
+        const userRate = parseFloat(billingInput.value);
+        const stateAvg = CPT_DATA[selectedCpt].stateAverages[selectedState] || 100;
+        const stateName = STATE_NAMES[selectedState] || selectedState;
+
+        // Update results
+        document.getElementById('results-state').textContent = stateName;
+        document.getElementById('your-rate').textContent = formatCurrency(userRate);
+        document.getElementById('state-avg-value').textContent = formatCurrency(stateAvg);
+
+        // Calculate gauge position
+        const maxGauge = stateAvg * 2;
+        const position = Math.min(Math.max((userRate / maxGauge) * 100, 2), 98);
+        const marker = document.getElementById('gauge-marker');
+        const markerEmoji = document.getElementById('marker-emoji');
+
+        document.getElementById('gauge-max').textContent = formatCurrency(maxGauge);
+        document.getElementById('gauge-avg').textContent = `Avg: ${formatCurrency(stateAvg)}`;
+
+        // Animate gauge
+        setTimeout(() => {
+            marker.style.left = position + '%';
+        }, 100);
+
+        // Update insight
+        const diff = userRate - stateAvg;
+        const diffPercent = ((diff / stateAvg) * 100).toFixed(0);
+        const insightCard = document.getElementById('insight-card');
+        const insightIcon = document.getElementById('insight-icon');
+        const insightTitle = document.getElementById('insight-title');
+        const insightText = document.getElementById('insight-text');
+
+        // Get CTA elements
+        const flychainCta = document.getElementById('flychain-cta');
+        const ctaHeadline = document.getElementById('cta-headline');
+        const ctaSubtext = document.getElementById('cta-subtext');
+        const yourRateCard = document.querySelector('.comparison-card.your-rate');
+
+        insightCard.classList.remove('above', 'below', 'on-target');
+        flychainCta.classList.remove('top-performer', 'needs-help');
+        yourRateCard.classList.remove('above', 'below', 'on-target');
+
+        if (diff > stateAvg * 0.1) {
+            // Above average
+            insightCard.classList.add('above');
+            yourRateCard.classList.add('above');
+            insightIcon.textContent = '📈';
+            insightTitle.textContent = 'Above Average';
+            insightText.textContent = `You're billing ${formatCurrency(Math.abs(diff))} (+${Math.abs(diffPercent)}%) above the ${stateName} average for this code.`;
+
+            // Emoji for marker - crown for top billers
+            markerEmoji.textContent = '👑';
+
+            // CTA for high billers
+            flychainCta.classList.add('top-performer');
+            ctaHeadline.textContent = "You're billing strong! 💪";
+            ctaSubtext.textContent = "Stay ahead of the curve with FlyChain's financial intelligence tools. Get real-time insights to maintain your competitive edge.";
+
+        } else if (diff < -stateAvg * 0.1) {
+            // Below average
+            insightCard.classList.add('below');
+            yourRateCard.classList.add('below');
+            insightIcon.textContent = '📉';
+            insightTitle.textContent = 'Below Average';
+            insightText.textContent = `You're billing ${formatCurrency(Math.abs(diff))} (${diffPercent}%) below the ${stateName} average. Consider reviewing your rates.`;
+
+            // Emoji for marker - money with wings for low billers
+            markerEmoji.textContent = '💸';
+
+            // CTA for low billers - most aggressive
+            flychainCta.classList.add('needs-help');
+            ctaHeadline.textContent = `You're leaving money on the table! 📊`;
+            ctaSubtext.textContent = `Practices in ${stateName} charge ${Math.abs(diffPercent)}% more on average. FlyChain helps you optimize billing and capture every dollar you've earned.`;
+
+        } else {
+            // Right on target
+            insightCard.classList.add('on-target');
+            yourRateCard.classList.add('on-target');
+            insightIcon.textContent = '✅';
+            insightTitle.textContent = 'Right on Target';
+            insightText.textContent = `Your billing is within 10% of the ${stateName} average. You're competitively priced.`;
+
+            // Emoji for marker - bullseye for on target
+            markerEmoji.textContent = '🎯';
+
+            // CTA for average billers
+            ctaHeadline.textContent = "Not bad! Want to reach the top 1%?";
+            ctaSubtext.textContent = "You're close to average, but the best practices earn 20-40% more. FlyChain gives you the insights to get there.";
+        }
+
+        // Show results, hide input
+        inputCard.style.display = 'none';
+        resultsSection.classList.remove('hidden');
+    }
+
+    // Reset button handler
+    resetBtn.addEventListener('click', () => {
+        resultsSection.classList.add('hidden');
+        inputCard.style.display = 'flex';
+
+        // Reset form
+        zipcodeInput.value = '';
+        cptInput.value = '';
+        billingInput.value = '';
+        stateDetected.classList.remove('visible');
+        cptDescription.classList.remove('visible');
+        zipcodeInput.classList.remove('valid', 'invalid');
+        cptInput.classList.remove('valid', 'invalid');
+        selectedState = null;
+        selectedCpt = null;
+        compareBtn.disabled = true;
+
+        // Reset gauge
+        document.getElementById('gauge-marker').style.left = '50%';
+    });
+});
