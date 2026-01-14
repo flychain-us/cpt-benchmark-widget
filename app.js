@@ -1,4 +1,6 @@
 // CPT Checker App
+const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/24400971/ugkyxst/';
+
 document.addEventListener('DOMContentLoaded', () => {
     const zipcodeInput = document.getElementById('zipcode');
     const cptInput = document.getElementById('cpt-code');
@@ -11,8 +13,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputCard = document.querySelector('.input-card');
     const resetBtn = document.getElementById('reset-btn');
 
+    // Email gate elements
+    const emailModal = document.getElementById('email-modal');
+    const emailForm = document.getElementById('email-form');
+    const emailInput = document.getElementById('email-input');
+
     let selectedState = null;
     let selectedCpt = null;
+
+    // Email gate: Check if user has submitted email
+    function hasUserEmail() {
+        return localStorage.getItem('flychain_user_email') !== null;
+    }
+
+    // Email gate: Get analysis count
+    function getAnalysisCount() {
+        return parseInt(localStorage.getItem('flychain_analysis_count') || '0', 10);
+    }
+
+    // Email gate: Increment analysis count
+    function incrementAnalysisCount() {
+        const count = getAnalysisCount() + 1;
+        localStorage.setItem('flychain_analysis_count', count.toString());
+        return count;
+    }
+
+    // Send data to Zapier
+    async function sendToZapier(email) {
+        if (!ZAPIER_WEBHOOK_URL || ZAPIER_WEBHOOK_URL.includes('REPLACE_WITH_YOUR')) {
+            console.warn('Zapier Webhook URL not configured.');
+            return;
+        }
+
+        const payload = {
+            email: email,
+            timestamp: new Date().toISOString(),
+            source: 'ABA Rate Benchmark Tool',
+            zipcode: zipcodeInput.value,
+            state: selectedState,
+            cptCode: selectedCpt,
+            billingRate: billingInput.value,
+            analysisCount: getAnalysisCount()
+        };
+
+        try {
+            await fetch(ZAPIER_WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Use no-cors for simple webhooks if needed, though cors is better if Zapier supports it
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            console.log('Lead sent to Zapier successfully.');
+        } catch (error) {
+            console.error('Error sending lead to Zapier:', error);
+        }
+    }
 
     // State lookup from zipcode
     function getStateFromZip(zip) {
@@ -62,63 +119,18 @@ document.addEventListener('DOMContentLoaded', () => {
         validateForm();
     });
 
-    // CPT code input handler
-    cptInput.addEventListener('input', (e) => {
-        const value = e.target.value.replace(/\D/g, '');
-        e.target.value = value;
-        selectedCpt = null;
-        cptDescription.classList.remove('visible');
-        cptInput.classList.remove('valid', 'invalid');
-
-        if (value.length >= 2) {
-            const matches = Object.keys(CPT_DATA).filter(code => code.startsWith(value));
-            if (matches.length > 0 && value.length < 5) {
-                renderCptDropdown(matches);
-                cptDropdown.classList.add('visible');
-            } else {
-                cptDropdown.classList.remove('visible');
-            }
-
-            if (CPT_DATA[value]) {
-                selectCpt(value);
-            }
+    // CPT code select handler
+    cptInput.addEventListener('change', (e) => {
+        selectedCpt = e.target.value;
+        if (selectedCpt) {
+            cptDescription.textContent = ABA_DATA[selectedCpt].description;
+            cptDescription.classList.add('visible');
+            cptInput.classList.add('valid');
         } else {
-            cptDropdown.classList.remove('visible');
+            cptDescription.classList.remove('visible');
+            cptInput.classList.remove('valid');
         }
         validateForm();
-    });
-
-    function renderCptDropdown(codes) {
-        cptDropdown.innerHTML = codes.map(code => `
-            <div class="cpt-option" data-code="${code}">
-                <span class="cpt-option-code">${code}</span>
-                <span class="cpt-option-desc">${CPT_DATA[code].description}</span>
-            </div>
-        `).join('');
-
-        cptDropdown.querySelectorAll('.cpt-option').forEach(option => {
-            option.addEventListener('click', () => {
-                selectCpt(option.dataset.code);
-                cptDropdown.classList.remove('visible');
-            });
-        });
-    }
-
-    function selectCpt(code) {
-        selectedCpt = code;
-        cptInput.value = code;
-        cptDescription.textContent = CPT_DATA[code].description;
-        cptDescription.classList.add('visible');
-        cptInput.classList.add('valid');
-        cptDropdown.classList.remove('visible');
-        validateForm();
-    }
-
-    // Close dropdown on outside click
-    document.addEventListener('click', (e) => {
-        if (!cptInput.contains(e.target) && !cptDropdown.contains(e.target)) {
-            cptDropdown.classList.remove('visible');
-        }
     });
 
     // Billing amount input handler
@@ -138,12 +150,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Compare button handler
     compareBtn.addEventListener('click', () => {
         if (compareBtn.disabled) return;
+
+        // Email gate: if second+ analysis and no email, show modal
+        const analysisCount = getAnalysisCount();
+        if (analysisCount >= 1 && !hasUserEmail()) {
+            emailModal.classList.remove('hidden');
+            return;
+        }
+
+        incrementAnalysisCount();
         showResults();
+    });
+
+    // Email form submission handler
+    emailForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        if (email) {
+            localStorage.setItem('flychain_user_email', email);
+            emailModal.classList.add('hidden');
+            sendToZapier(email); // Trigger Zapier push
+            incrementAnalysisCount();
+            showResults();
+        }
     });
 
     function showResults() {
         const userRate = parseFloat(billingInput.value);
-        const stateAvg = CPT_DATA[selectedCpt].stateAverages[selectedState] || 100;
+        const stateAvg = ABA_DATA[selectedCpt].stateAverages[selectedState] || 15;
         const stateName = STATE_NAMES[selectedState] || selectedState;
 
         // Update results
@@ -151,8 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('your-rate').textContent = formatCurrency(userRate);
         document.getElementById('state-avg-value').textContent = formatCurrency(stateAvg);
 
-        // Calculate gauge position
-        const maxGauge = stateAvg * 2;
+        // Calculate gauge position - ABA rates are tighter usually, so let's adjust max
+        const maxGauge = stateAvg * 1.5;
         const position = Math.min(Math.max((userRate / maxGauge) * 100, 2), 98);
         const marker = document.getElementById('gauge-marker');
         const markerEmoji = document.getElementById('marker-emoji');
@@ -183,52 +217,52 @@ document.addEventListener('DOMContentLoaded', () => {
         flychainCta.classList.remove('top-performer', 'needs-help');
         yourRateCard.classList.remove('above', 'below', 'on-target');
 
-        if (diff > stateAvg * 0.1) {
+        if (diff > stateAvg * 0.05) {
             // Above average
             insightCard.classList.add('above');
             yourRateCard.classList.add('above');
-            insightIcon.textContent = '📈';
-            insightTitle.textContent = 'Above Average';
-            insightText.textContent = `You're billing ${formatCurrency(Math.abs(diff))} (+${Math.abs(diffPercent)}%) above the ${stateName} average for this code.`;
+            insightIcon.textContent = '🚀';
+            insightTitle.textContent = 'Optimized Performance';
+            insightText.textContent = `Your rate is ${formatCurrency(Math.abs(diff))} (+${Math.abs(diffPercent)}%) above the ${stateName} benchmark for this service.`;
 
-            // Emoji for marker - crown for top billers
-            markerEmoji.textContent = '👑';
+            // Emoji for marker - gem for top agencies
+            markerEmoji.textContent = '💎';
 
             // CTA for high billers
             flychainCta.classList.add('top-performer');
-            ctaHeadline.textContent = "You're billing strong! 💪";
-            ctaSubtext.textContent = "Stay ahead of the curve with FlyChain's financial intelligence tools. Get real-time insights to maintain your competitive edge.";
+            ctaHeadline.textContent = "🚀 Leading rates deserve leading operations.";
+            ctaSubtext.textContent = "Top-performing agencies use Flychain's healthcare-specific accounting and CFO tools to protect their margins and automate financial reporting.";
 
-        } else if (diff < -stateAvg * 0.1) {
+        } else if (diff < -stateAvg * 0.05) {
             // Below average
             insightCard.classList.add('below');
             yourRateCard.classList.add('below');
             insightIcon.textContent = '📉';
-            insightTitle.textContent = 'Below Average';
-            insightText.textContent = `You're billing ${formatCurrency(Math.abs(diff))} (${diffPercent}%) below the ${stateName} average. Consider reviewing your rates.`;
+            insightTitle.textContent = 'Revenue Opportunity';
+            insightText.textContent = `You're receiving ${formatCurrency(Math.abs(diff))} (${diffPercent}%) less than the ${stateName} benchmark. There may be room for negotiation.`;
 
-            // Emoji for marker - money with wings for low billers
-            markerEmoji.textContent = '💸';
+            // Emoji for marker - warning for low billers
+            markerEmoji.textContent = '⚠️';
 
             // CTA for low billers - most aggressive
             flychainCta.classList.add('needs-help');
-            ctaHeadline.textContent = `You're leaving money on the table! 📊`;
-            ctaSubtext.textContent = `Practices in ${stateName} charge ${Math.abs(diffPercent)}% more on average. FlyChain helps you optimize billing and capture every dollar you've earned.`;
+            ctaHeadline.textContent = `📊 Unlock higher reimbursement rates`;
+            ctaSubtext.textContent = `Flychain's CFO Intelligence tools show you exactly where you're underpaid - so you can negotiate with real payer data.`;
 
         } else {
             // Right on target
             insightCard.classList.add('on-target');
             yourRateCard.classList.add('on-target');
             insightIcon.textContent = '✅';
-            insightTitle.textContent = 'Right on Target';
-            insightText.textContent = `Your billing is within 10% of the ${stateName} average. You're competitively priced.`;
+            insightTitle.textContent = 'Market Efficient';
+            insightText.textContent = `Your contracted rate is within 5% of the ${stateName} industry benchmark. You're priced effectively for your market.`;
 
-            // Emoji for marker - bullseye for on target
+            // Emoji for marker - check for on target
             markerEmoji.textContent = '🎯';
 
             // CTA for average billers
-            ctaHeadline.textContent = "Not bad! Want to reach the top 1%?";
-            ctaSubtext.textContent = "You're close to average, but the best practices earn 20-40% more. FlyChain gives you the insights to get there.";
+            ctaHeadline.textContent = "💡 Great rates. How's your cash flow?";
+            ctaSubtext.textContent = "Even with competitive rates, generic accounting can mask inefficiencies. Flychain provides healthcare-specific financial clarity to keep your agency thriving.";
         }
 
         // Show results, hide input
@@ -246,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cptInput.value = '';
         billingInput.value = '';
         stateDetected.classList.remove('visible');
-        cptDescription.classList.remove('visible');
+        cptDescription.textContent = 'Rates vary by carrier; showing state-level benchmarks.';
         zipcodeInput.classList.remove('valid', 'invalid');
         cptInput.classList.remove('valid', 'invalid');
         selectedState = null;

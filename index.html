@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Compare your CPT code billing rates against state averages. A tool for healthcare clinicians to benchmark their pricing.">
-    <title>CPT Benchmark | Flychain</title>
+        content="Compare your ABA agency's contracted rates against state averages. A tool for ABA providers to benchmark their pricing.">
+    <title>ABA Rate Benchmark | Flychain</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,9 +17,9 @@
     <div class="app">
         <!-- Header -->
         <header class="header header-centered">
-            <a href="https://flychain.us" target="_blank" rel="noopener noreferrer" class="header-brand">
-                <img src="flychain-logo-hq.png" alt="FlyChain" class="flychain-logo-centered">
-                <span class="brand-subtitle">CPT Benchmark</span>
+            <a href="https://www.flychain.us/contact" target="_blank" rel="noopener noreferrer" class="header-brand">
+                <img src="flychain-logo-hq.png" alt="Flychain" class="flychain-logo-centered">
+                <span class="brand-subtitle">ABA Benchmark</span>
             </a>
         </header>
 
@@ -27,10 +27,10 @@
         <main class="main">
             <section class="hero">
                 <h1 class="hero-title">
-                    Are you billing <span class="highlight">competitively</span>?
+                    Are your <span class="highlight">ABA rates</span> competitive?
                 </h1>
                 <p class="hero-subtitle">
-                    Compare your CPT code rates against state averages in seconds.
+                    Compare your agency's contracted rates against state benchmarks.
                 </p>
             </section>
 
@@ -39,7 +39,7 @@
                 <div class="input-group">
                     <label for="zipcode" class="input-label">
                         <span class="label-icon">📍</span>
-                        Your Zipcode
+                        Agency Zipcode
                     </label>
                     <input type="text" id="zipcode" class="input-field" placeholder="e.g. 10001" maxlength="5"
                         inputmode="numeric" autocomplete="postal-code">
@@ -48,21 +48,32 @@
 
                 <div class="input-group">
                     <label for="cpt-code" class="input-label">
-                        <span class="label-icon">🏥</span>
-                        CPT Code
+                        <span class="label-icon">🧩</span>
+                        Service Code (CPT)
                     </label>
                     <div class="cpt-input-wrapper">
-                        <input type="text" id="cpt-code" class="input-field" placeholder="e.g. 99213" maxlength="5"
-                            inputmode="numeric" autocomplete="off">
-                        <div class="cpt-dropdown" id="cpt-dropdown"></div>
+                        <select id="cpt-code" class="input-field select-field">
+                            <option value="" disabled selected>Select an ABA code...</option>
+                            <option value="97151">97151 - Assessment</option>
+                            <option value="97152">97152 - Support Assessment</option>
+                            <option value="97153">97153 - Direct Treatment (1:1)</option>
+                            <option value="97154">97154 - Group Treatment</option>
+                            <option value="97155">97155 - Supervision / Mod</option>
+                            <option value="97156">97156 - Parent Training</option>
+                            <option value="97157">97157 - Group Parent Training</option>
+                            <option value="97158">97158 - Group Supervision</option>
+                            <option value="0362T">0362T - Severe Assessment</option>
+                            <option value="0373T">0373T - Severe Treatment</option>
+                        </select>
                     </div>
-                    <div class="cpt-description" id="cpt-description"></div>
+                    <div class="cpt-description" id="cpt-description">Rates vary by carrier; showing state-level
+                        benchmarks.</div>
                 </div>
 
                 <div class="input-group">
                     <label for="billing-amount" class="input-label">
                         <span class="label-icon">💰</span>
-                        Your Billing Amount
+                        Your Contracted Rate (Per 15-Min Unit)
                     </label>
                     <div class="currency-input">
                         <span class="currency-symbol">$</span>
@@ -72,7 +83,7 @@
                 </div>
 
                 <button class="btn-primary" id="compare-btn" disabled>
-                    <span class="btn-text">Compare Rates</span>
+                    <span class="btn-text">Check Benchmarks</span>
                     <span class="btn-icon">→</span>
                 </button>
             </section>
@@ -81,7 +92,7 @@
             <section class="results-section hidden" id="results">
                 <div class="results-card">
                     <div class="results-header">
-                        <h2 class="results-title">Your Benchmark</h2>
+                        <h2 class="results-title">ABA Benchmark</h2>
                         <span class="results-state" id="results-state"></span>
                     </div>
 
@@ -107,7 +118,7 @@
                             <span class="comparison-value" id="your-rate">$0</span>
                         </div>
                         <div class="comparison-card state-avg">
-                            <span class="comparison-label">State Average</span>
+                            <span class="comparison-label">Benchmark Rate</span>
                             <span class="comparison-value" id="state-avg-value">$0</span>
                         </div>
                     </div>
@@ -116,21 +127,24 @@
                         <div class="insight-icon" id="insight-icon">📊</div>
                         <div class="insight-content">
                             <span class="insight-title" id="insight-title">Analysis</span>
-                            <span class="insight-text" id="insight-text">Enter your details above to see how you
-                                compare.</span>
+                            <span class="insight-text" id="insight-text">Enter your agency details to compare against
+                                industry data.</span>
                         </div>
                     </div>
 
-                    <!-- FlyChain CTA Funnel -->
+                    <!-- Flychain CTA Funnel -->
                     <div class="flychain-cta" id="flychain-cta">
                         <div class="cta-glow"></div>
                         <div class="cta-content">
                             <div class="cta-text">
-                                <span class="cta-headline" id="cta-headline">Want to optimize your billing?</span>
-                                <span class="cta-subtext" id="cta-subtext">Join thousands of healthcare providers using
-                                    FlyChain to maximize their revenue.</span>
+                                <span class="cta-headline" id="cta-headline">Financial control for your ABA
+                                    agency.</span>
+                                <span class="cta-subtext" id="cta-subtext">Join 100s of healthcare providers using
+                                    Flychain’s financial control tower for healthcare-specific bookkeeping, capital, and
+                                    CFO intelligence.</span>
                             </div>
-                            <a href="https://flychain.us" target="_blank" rel="noopener noreferrer" class="cta-button">
+                            <a href="https://www.flychain.us/contact" target="_blank" rel="noopener noreferrer"
+                                class="cta-button">
                                 <span>Get Started</span>
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -143,19 +157,34 @@
 
                     <button class="btn-secondary" id="reset-btn">
                         <span class="btn-icon">←</span>
-                        <span class="btn-text">Check Another</span>
+                        <span class="btn-text">Check Another Code</span>
                     </button>
                 </div>
             </section>
         </main>
 
+        <!-- Email Gate Modal -->
+        <div class="email-modal-overlay hidden" id="email-modal">
+            <div class="email-modal">
+                <div class="email-modal-content">
+                    <h3 class="email-modal-title">🔓 Unlock Unlimited Benchmarks</h3>
+                    <p class="email-modal-text">Enter your email to continue analyzing your ABA rates.</p>
+                    <form id="email-form" class="email-form">
+                        <input type="email" id="email-input" class="email-input" placeholder="you@agency.com" required>
+                        <button type="submit" class="email-submit-btn">Continue</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- Footer -->
         <footer class="footer">
-            <p>Powered by <strong>FlyChain</strong> • Data based on Medicare Fee Schedule averages</p>
+            <p>Powered by <strong>Flychain</strong> • Industry benchmarks for ABA providers</p>
         </footer>
     </div>
 
     <script src="data/cpt-averages.js"></script>
+    <script src="data/aba-data.js"></script>
     <script src="app.js"></script>
 </body>
 
