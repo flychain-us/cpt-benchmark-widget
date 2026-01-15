@@ -16,6 +16,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailForm = document.getElementById('email-form');
     const emailInput = document.getElementById('email-input');
 
+    // Gauge toggle element
+    const gaugeToggle = document.getElementById('gauge-toggle');
+    const gaugeContainer = document.getElementById('rate-gauge-container');
+
+    // Gauge toggle handler
+    if (gaugeToggle && gaugeContainer) {
+        gaugeToggle.addEventListener('change', () => {
+            if (gaugeToggle.checked) {
+                gaugeContainer.classList.remove('hidden');
+            } else {
+                gaugeContainer.classList.add('hidden');
+            }
+        });
+    }
+
     // Populate state dropdown
     // process_cpt_csv.py excludes WV and DC from the data, but we should also exclude them from the UI
     const EXCLUDED_STATES = ['WV', 'DC'];
@@ -222,7 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setSafeText('results-state', stateName);
             setSafeText('your-rate', formatCurrency(userRate));
-            setSafeText('state-avg-value', 'N/A');
+            setSafeText('gauge-median', 'N/A');
+            setSafeText('gauge-top', 'N/A');
+            setSafeText('rate-delta', '');
 
             const insightIcon = document.getElementById('insight-icon');
             const insightTitle = document.getElementById('insight-title');
@@ -232,129 +249,62 @@ document.addEventListener('DOMContentLoaded', () => {
             if (insightTitle) insightTitle.textContent = 'Data Unavailable';
             if (insightText) insightText.textContent = `We do not have sufficient data for ${stateName} to provide a reliable benchmark for this code.`;
 
-            // Hide distribution or show empty state
-            const distContainer = document.getElementById('distribution-container');
-            if (distContainer) distContainer.style.opacity = '0.5';
-
             inputCard.style.display = 'none';
             resultsSection.classList.remove('hidden');
             return;
         }
 
         const median = stats.p50;
-        console.log('Benchmark Logic:', { userRate, median, stats });
+        const highestRate = stats.p95;
+        const delta = userRate - median;
+        console.log('Benchmark Logic:', { userRate, median, highestRate, delta, stats });
 
-        // Update results
+        // Update hero rate display
         setSafeText('results-state', stateName);
         setSafeText('results-cpt', selectedCpt);
         setSafeText('your-rate', formatCurrency(userRate));
+
+        // Update comparison card values
         setSafeText('state-avg-value', formatCurrency(median));
+        setSafeText('highest-rate-value', formatCurrency(highestRate));
 
-        // Calculate user's percentile position
-        function calculatePercentile(rate, stats) {
-            // Interpolate between known percentile points
-            const points = [
-                { percentile: 5, value: stats.p5 },
-                { percentile: 10, value: stats.p10 },
-                { percentile: 25, value: stats.p25 },
-                { percentile: 50, value: stats.p50 },
-                { percentile: 75, value: stats.p75 },
-                { percentile: 90, value: stats.p90 },
-                { percentile: 95, value: stats.p95 }
-            ];
-
-            // If below p5
-            if (rate <= points[0].value) {
-                return Math.max(1, Math.round((rate / points[0].value) * 5));
+        // Update delta badge
+        const deltaEl = document.getElementById('rate-delta');
+        if (deltaEl) {
+            deltaEl.classList.remove('positive', 'negative', 'neutral');
+            if (delta > 0) {
+                deltaEl.textContent = `+${formatCurrency(delta)}`;
+                deltaEl.classList.add('positive');
+            } else if (delta < 0) {
+                deltaEl.textContent = `${formatCurrency(delta)}`;
+                deltaEl.classList.add('negative');
+            } else {
+                deltaEl.textContent = `= median`;
+                deltaEl.classList.add('neutral');
             }
-            // If above p95
-            if (rate >= points[points.length - 1].value) {
-                return Math.min(99, 95 + Math.round(((rate - points[points.length - 1].value) / points[points.length - 1].value) * 20));
-            }
-
-            // Interpolate between points
-            for (let i = 0; i < points.length - 1; i++) {
-                if (rate >= points[i].value && rate <= points[i + 1].value) {
-                    const range = points[i + 1].value - points[i].value;
-                    const position = rate - points[i].value;
-                    const percentileRange = points[i + 1].percentile - points[i].percentile;
-                    return Math.round(points[i].percentile + (position / range) * percentileRange);
-                }
-            }
-            return 50; // Fallback
         }
 
-        const userPercentile = calculatePercentile(userRate, stats);
+        // Update gauge labels
+        setSafeText('gauge-median', formatCurrency(median));
+        setSafeText('gauge-top', formatCurrency(highestRate));
 
-        // Determine tier and position
-        let tierName = '';
-        let pointerPosition = 0; // percentage across the bar
-
-        if (userPercentile < 5) {
-            tierName = 'bottom5';
-            pointerPosition = (userPercentile / 5) * 5; // 0-5%
-        } else if (userPercentile < 25) {
-            tierName = 'p5-25';
-            pointerPosition = 5 + ((userPercentile - 5) / 20) * 20; // 5-25%
-        } else if (userPercentile < 50) {
-            tierName = 'p25-50';
-            pointerPosition = 25 + ((userPercentile - 25) / 25) * 25; // 25-50%
-        } else if (userPercentile < 75) {
-            tierName = 'p50-75';
-            pointerPosition = 50 + ((userPercentile - 50) / 25) * 25; // 50-75%
-        } else if (userPercentile < 95) {
-            tierName = 'p75-95';
-            pointerPosition = 75 + ((userPercentile - 75) / 20) * 20; // 75-95%
+        // Calculate gauge position (0% = at median, 100% = at top rate or above)
+        // If below median, position at 0
+        let gaugePosition = 0;
+        if (userRate >= highestRate) {
+            gaugePosition = 100;
+        } else if (userRate > median) {
+            gaugePosition = ((userRate - median) / (highestRate - median)) * 100;
         } else {
-            tierName = 'top5';
-            pointerPosition = 95 + ((userPercentile - 95) / 5) * 5; // 95-100%
+            gaugePosition = 0; // At or below median
         }
+        gaugePosition = Math.max(0, Math.min(100, gaugePosition));
 
-        // Clamp position
-        pointerPosition = Math.max(2, Math.min(98, pointerPosition));
-
-        // Get emoji based on percentile tier
-        let pointerEmoji = '📍';
-        if (userPercentile >= 95) pointerEmoji = '💎';
-        else if (userPercentile >= 75) pointerEmoji = '🚀';
-        else if (userPercentile >= 50) pointerEmoji = '✅';
-        else if (userPercentile >= 25) pointerEmoji = '🎯';
-        else if (userPercentile >= 5) pointerEmoji = '⚠️';
-        else pointerEmoji = '📉';
-
-        // Update distribution header
-        setSafeText('distribution-your-rate', formatCurrency(userRate));
-        setSafeText('pointer-rate', `${pointerEmoji} ${formatCurrency(userRate)}`);
-
-        // Format percentile badge
-        const percentileBadge = document.getElementById('percentile-badge');
-        if (percentileBadge) {
-            const suffix = getOrdinalSuffix(userPercentile);
-            percentileBadge.textContent = `${userPercentile}${suffix} Percentile`;
-            percentileBadge.classList.remove('below-median', 'near-median');
-            if (userPercentile < 25) {
-                percentileBadge.classList.add('below-median');
-            } else if (userPercentile < 75) {
-                percentileBadge.classList.add('near-median');
-            }
-        }
-
-        // Update segment labels with actual percentile values (simplified: min, median, max)
-        setSafeText('seg-label-p5', formatCurrency(stats.p5));
-        setSafeText('seg-label-p50', formatCurrency(stats.p50));
-        setSafeText('seg-label-p95', formatCurrency(stats.p95));
-
-        // Highlight active segment
-        const segments = document.querySelectorAll('.segment');
-        segments.forEach(seg => seg.classList.remove('active'));
-        const activeSegment = document.querySelector(`.segment[data-tier="${tierName}"]`);
-        if (activeSegment) activeSegment.classList.add('active');
-
-        // Animate pointer position
-        const pointer = document.getElementById('segment-pointer');
-        if (pointer) {
+        // Animate gauge marker
+        const gaugeMarker = document.getElementById('rate-gauge-marker');
+        if (gaugeMarker) {
             setTimeout(() => {
-                pointer.style.left = pointerPosition + '%';
+                gaugeMarker.style.left = gaugePosition + '%';
             }, 100);
         }
 
@@ -364,57 +314,56 @@ document.addEventListener('DOMContentLoaded', () => {
         const insightTitle = document.getElementById('insight-title');
         const insightText = document.getElementById('insight-text');
 
-        // Get CTA elements
+        // Get CTA elements and your rate card
         const flychainCta = document.getElementById('flychain-cta');
         const ctaHeadline = document.getElementById('cta-headline');
         const ctaSubtext = document.getElementById('cta-subtext');
-        const yourRateCard = document.querySelector('.comparison-card.your-rate');
+        const yourRateCard = document.getElementById('your-rate-card');
 
         if (insightCard) insightCard.classList.remove('above', 'below', 'on-target');
         if (flychainCta) flychainCta.classList.remove('top-performer', 'needs-help');
         if (yourRateCard) yourRateCard.classList.remove('above', 'below', 'on-target');
 
-        const distContainer = document.getElementById('distribution-container');
-        if (distContainer) distContainer.style.opacity = '1';
-
-        // Logic based on percentiles
-        if (userRate >= stats.p75) {
-            // Above 75th percentile - Top Performer
+        // Three-tier market position logic
+        // Note: For many ABA codes, baseline rates (e.g., Medicaid fee schedules) account for a large portion 
+        // of the market (often 5th-50th percentile). We use median as the key comparison point.
+        if (userRate > stats.p75) {
+            // Above 75th percentile - Above Market
             if (insightCard) insightCard.classList.add('above');
             if (yourRateCard) yourRateCard.classList.add('above');
             if (insightIcon) insightIcon.textContent = '🚀';
-            if (insightTitle) insightTitle.textContent = 'Top Performer';
-            if (insightText) insightText.textContent = `Your rate is in the top tier (above 75th percentile) for ${stateName}. You are receiving stronger-than-average reimbursement in your market.`;
+            if (insightTitle) insightTitle.textContent = 'Above Market';
+            if (insightText) insightText.textContent = `Great news — your rate is above the market average for ${stateName}. You've negotiated stronger-than-typical reimbursement for this service.`;
 
             // CTA for high billers
             if (flychainCta) flychainCta.classList.add('top-performer');
-            if (ctaHeadline) ctaHeadline.textContent = "🚀 Leading rates deserve leading operations.";
-            if (ctaSubtext) ctaSubtext.textContent = "Top-performing practices use Flychain's healthcare-specific accounting and CFO tools to protect their margins and automate financial reporting.";
+            if (ctaHeadline) ctaHeadline.textContent = "🚀 Strong rates deserve strong operations.";
+            if (ctaSubtext) ctaSubtext.textContent = "Top-performing ABA practices use Flychain's healthcare-specific accounting and CFO tools to protect their margins and automate financial reporting.";
 
-        } else if (userRate < stats.p25) {
-            // Below 25th percentile - Needs Improvement
+        } else if (userRate < median) {
+            // Below median - Below Market
             if (insightCard) insightCard.classList.add('below');
             if (yourRateCard) yourRateCard.classList.add('below');
             if (insightIcon) insightIcon.textContent = '📉';
             if (insightTitle) insightTitle.textContent = 'Below Market';
-            if (insightText) insightText.textContent = `Your rate is in the lower tier (below 25th percentile) for ${stateName}. There is significant room for negotiation.`;
+            if (insightText) insightText.textContent = `Your rate is below the market median for ${stateName}. Many ABA providers have negotiated higher rates for this service — there may be room for improvement.`;
 
             // CTA for low billers
             if (flychainCta) flychainCta.classList.add('needs-help');
-            if (ctaHeadline) ctaHeadline.textContent = `📊 Unlock higher reimbursement rates`;
-            if (ctaSubtext) ctaSubtext.textContent = `Flychain's CFO Intelligence tools show you exactly where you're underpaid - so you can negotiate with real payer data.`;
+            if (ctaHeadline) ctaHeadline.textContent = `📊 Room to negotiate higher rates`;
+            if (ctaSubtext) ctaSubtext.textContent = `Flychain's CFO Intelligence tools help you understand exactly where you're being underpaid — so you can negotiate with real payer data.`;
 
         } else {
-            // Between p25 and p75 - Market Competitive
+            // At or above median, up to 75th - Market Competitive
             if (insightCard) insightCard.classList.add('on-target');
             if (yourRateCard) yourRateCard.classList.add('on-target');
             if (insightIcon) insightIcon.textContent = '✅';
             if (insightTitle) insightTitle.textContent = 'Market Competitive';
-            if (insightText) insightText.textContent = `Your rate is aligned with the market (between 25th and 75th percentile) for ${stateName}.`;
+            if (insightText) insightText.textContent = `Your rate is in line with the market for ${stateName}. You're receiving competitive reimbursement compared to other ABA providers.`;
 
             // CTA for average billers
-            if (ctaHeadline) ctaHeadline.textContent = "💡 Market-standard rates. How's your cash flow?";
-            if (ctaSubtext) ctaSubtext.textContent = "Even with competitive rates, generic accounting can mask inefficiencies. Flychain provides healthcare-specific financial clarity to keep your practice thriving.";
+            if (ctaHeadline) ctaHeadline.textContent = "📍 Want to see what local clinics are charging?";
+            if (ctaSubtext) ctaSubtext.textContent = "Get detailed rate breakdowns for ABA providers in your area. Book a quick call to see how you compare to clinics near you.";
         }
 
         // Show results, hide input
@@ -441,8 +390,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ensure validation is run to update button state (it will likely be disabled if billing is empty)
         validateForm();
 
-        // Reset pointer position for next run
-        const pointer = document.getElementById('segment-pointer');
-        if (pointer) pointer.style.left = '50%';
+        // Reset gauge marker for next run
+        const gaugeMarker = document.getElementById('rate-gauge-marker');
+        if (gaugeMarker) gaugeMarker.style.left = '0%';
     });
 });

@@ -101,37 +101,20 @@
                         </div>
                     </div>
 
-                    <div class="distribution-container" id="distribution-container">
-                        <div class="distribution-header">
-                            <span class="distribution-your-rate" id="distribution-your-rate">$0.00</span>
-                            <span class="distribution-percentile-badge" id="percentile-badge">--</span>
-                        </div>
-
-                        <div class="segment-bar-wrapper">
-                            <div class="segment-pointer" id="segment-pointer">
-                                <div class="pointer-label"><span id="pointer-rate">$0.00</span></div>
-                                <div class="pointer-arrow"></div>
-                            </div>
-                            <div class="segment-bar">
-                                <div class="segment bottom-5" data-tier="bottom5"><span>&lt;5%</span></div>
-                                <div class="segment p5-25" data-tier="p5-25"><span>5-25%</span></div>
-                                <div class="segment p25-50" data-tier="p25-50"><span>25-50%</span></div>
-                                <div class="segment p50-75" data-tier="p50-75"><span>50-75%</span></div>
-                                <div class="segment p75-95" data-tier="p75-95"><span>75-95%</span></div>
-                                <div class="segment top-5" data-tier="top5"><span>95%+</span></div>
-                            </div>
-                            <div class="segment-labels">
-                                <span id="seg-label-p5">$0</span>
-                                <span id="seg-label-p50">Median</span>
-                                <span id="seg-label-p95">$0</span>
-                            </div>
-                        </div>
+                    <!-- View Toggle (for A/B testing) -->
+                    <div class="view-toggle-container">
+                        <label class="view-toggle">
+                            <input type="checkbox" id="gauge-toggle">
+                            <span class="toggle-label">Show position gauge</span>
+                        </label>
                     </div>
 
-                    <div class="comparison-cards">
-                        <div class="comparison-card your-rate">
+                    <!-- Comparison Cards -->
+                    <div class="comparison-cards three-up">
+                        <div class="comparison-card your-rate" id="your-rate-card">
                             <span class="comparison-label">Your Rate</span>
                             <span class="comparison-value" id="your-rate">$0</span>
+                            <span class="comparison-delta" id="rate-delta"></span>
                         </div>
                         <div class="comparison-card state-avg">
                             <div class="label-with-tooltip">
@@ -145,10 +128,42 @@
                             </div>
                             <span class="comparison-value" id="state-avg-value">$0</span>
                         </div>
+                        <div class="comparison-card highest-rate">
+                            <div class="label-with-tooltip">
+                                <span class="comparison-label">Top Rate</span>
+                                <div class="tooltip-wrapper">
+                                    <span class="tooltip-trigger">?</span>
+                                    <div class="tooltip-box">The highest contracted rate among ABA providers in your
+                                        state for this service code.</div>
+                                </div>
+                            </div>
+                            <span class="comparison-value" id="highest-rate-value">$0</span>
+                        </div>
                     </div>
 
+                    <!-- Rate Position Gauge (toggleable) -->
+                    <div class="rate-gauge hidden" id="rate-gauge-container">
+                        <div class="rate-gauge-track">
+                            <div class="rate-gauge-fill" id="rate-gauge-fill"></div>
+                            <div class="rate-gauge-marker" id="rate-gauge-marker"></div>
+                        </div>
+                        <div class="rate-gauge-labels">
+                            <div class="gauge-label-left">
+                                <span class="gauge-label-title">Median</span>
+                                <span class="gauge-label-value" id="gauge-median">$0</span>
+                            </div>
+                            <div class="gauge-label-right">
+                                <span class="gauge-label-title">Top Rate</span>
+                                <span class="gauge-label-value" id="gauge-top">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Insight Card -->
                     <div class="insight-card" id="insight-card">
-                        <div class="insight-icon" id="insight-icon">📊</div>
+                        <div class="insight-icon-wrapper" id="insight-icon-wrapper">
+                            <span class="insight-icon" id="insight-icon">📊</span>
+                        </div>
                         <div class="insight-content">
                             <span class="insight-title" id="insight-title">Analysis</span>
                             <span class="insight-text" id="insight-text">Enter your agency details to compare against
