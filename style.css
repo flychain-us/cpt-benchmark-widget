@@ -769,126 +769,7 @@ body {
     color: var(--primary);
 }
 
-/* Rate Position Gauge */
-.rate-gauge {
-    padding: 8px 0 24px;
-}
 
-.rate-gauge-track {
-    position: relative;
-    height: 12px;
-    background: linear-gradient(90deg, #f0b800 0%, var(--accent-sage) 50%, var(--primary) 100%);
-    border-radius: 100px;
-    overflow: visible;
-}
-
-.rate-gauge-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 100px;
-    transition: width var(--transition-slow);
-}
-
-.rate-gauge-marker {
-    position: absolute;
-    top: 50%;
-    left: 0%;
-    transform: translate(-50%, -50%);
-    width: 24px;
-    height: 24px;
-    background: var(--white);
-    border: 4px solid var(--primary-dark);
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(17, 8, 35, 0.2);
-    transition: left var(--transition-slow);
-    z-index: 5;
-}
-
-.rate-gauge-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 12px;
-}
-
-.gauge-label-left,
-.gauge-label-right {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.gauge-label-right {
-    text-align: right;
-}
-
-.gauge-label-title {
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-}
-
-.gauge-label-value {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--primary-dark);
-}
-
-/* View Toggle for A/B Testing */
-.view-toggle-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 16px;
-}
-
-.view-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
-
-.view-toggle input[type="checkbox"] {
-    width: 36px;
-    height: 20px;
-    appearance: none;
-    background: var(--border-light);
-    border-radius: 100px;
-    position: relative;
-    cursor: pointer;
-    transition: background var(--transition-fast);
-}
-
-.view-toggle input[type="checkbox"]::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    background: var(--white);
-    border-radius: 50%;
-    transition: transform var(--transition-fast);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.view-toggle input[type="checkbox"]:checked {
-    background: var(--primary);
-}
-
-.view-toggle input[type="checkbox"]:checked::before {
-    transform: translateX(16px);
-}
-
-.toggle-label {
-    user-select: none;
-}
 
 .comparison-cards {
     display: grid;
@@ -997,10 +878,7 @@ body {
     color: var(--primary);
 }
 
-/* Hidden class for gauge toggle */
-.rate-gauge.hidden {
-    display: none;
-}
+
 
 /* Tooltip Styles */
 .label-with-tooltip {
@@ -1358,8 +1236,8 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    width: fit-content;
-    padding: 12px 24px;
+    width: 100%;
+    padding: 14px 24px;
     font-size: 0.9375rem;
     font-weight: 600;
     color: var(--primary);

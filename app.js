@@ -16,20 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailForm = document.getElementById('email-form');
     const emailInput = document.getElementById('email-input');
 
-    // Gauge toggle element
-    const gaugeToggle = document.getElementById('gauge-toggle');
-    const gaugeContainer = document.getElementById('rate-gauge-container');
 
-    // Gauge toggle handler
-    if (gaugeToggle && gaugeContainer) {
-        gaugeToggle.addEventListener('change', () => {
-            if (gaugeToggle.checked) {
-                gaugeContainer.classList.remove('hidden');
-            } else {
-                gaugeContainer.classList.add('hidden');
-            }
-        });
-    }
 
     // Populate state dropdown
     // process_cpt_csv.py excludes WV and DC from the data, but we should also exclude them from the UI
@@ -237,8 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setSafeText('results-state', stateName);
             setSafeText('your-rate', formatCurrency(userRate));
-            setSafeText('gauge-median', 'N/A');
-            setSafeText('gauge-top', 'N/A');
+
             setSafeText('rate-delta', '');
 
             const insightIcon = document.getElementById('insight-icon');
@@ -284,29 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Update gauge labels
-        setSafeText('gauge-median', formatCurrency(median));
-        setSafeText('gauge-top', formatCurrency(highestRate));
 
-        // Calculate gauge position (0% = at median, 100% = at top rate or above)
-        // If below median, position at 0
-        let gaugePosition = 0;
-        if (userRate >= highestRate) {
-            gaugePosition = 100;
-        } else if (userRate > median) {
-            gaugePosition = ((userRate - median) / (highestRate - median)) * 100;
-        } else {
-            gaugePosition = 0; // At or below median
-        }
-        gaugePosition = Math.max(0, Math.min(100, gaugePosition));
-
-        // Animate gauge marker
-        const gaugeMarker = document.getElementById('rate-gauge-marker');
-        if (gaugeMarker) {
-            setTimeout(() => {
-                gaugeMarker.style.left = gaugePosition + '%';
-            }, 100);
-        }
 
         // Update insight
         const insightCard = document.getElementById('insight-card');
@@ -390,8 +354,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ensure validation is run to update button state (it will likely be disabled if billing is empty)
         validateForm();
 
-        // Reset gauge marker for next run
-        const gaugeMarker = document.getElementById('rate-gauge-marker');
-        if (gaugeMarker) gaugeMarker.style.left = '0%';
+
     });
 });
