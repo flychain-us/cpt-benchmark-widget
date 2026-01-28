@@ -356,4 +356,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Iframe scroll fix: Forward wheel events to parent on desktop only
+    // This allows the parent page to scroll when mouse is over the iframe
+    // ─────────────────────────────────────────────────────────────────────────
+    const isDesktop = window.matchMedia('(pointer: fine)').matches;
+
+    if (isDesktop && window.parent !== window) {
+        document.addEventListener('wheel', (e) => {
+            // Forward the scroll to parent
+            window.parent.postMessage({
+                type: 'iframe-wheel',
+                deltaX: e.deltaX,
+                deltaY: e.deltaY,
+                deltaMode: e.deltaMode
+            }, '*');
+        }, { passive: true });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Iframe auto-height: Send height to parent for auto-resizing iframe
+    // ─────────────────────────────────────────────────────────────────────────
+    function postHeight() {
+        const appContainer = document.querySelector('.app');
+        if (!appContainer) return;
+        const height = appContainer.scrollHeight;
+        if (window.parent !== window) {
+            window.parent.postMessage({ type: 'iframe-height', height }, '*');
+        }
+    }
+
+    if (window.parent !== window) {
+        // Send initial height
+        postHeight();
+
+        // Send on resize
+        window.addEventListener('resize', postHeight);
+
+        // Observe DOM changes (e.g., when results appear)
+        const observer = new MutationObserver(postHeight);
+        const appContainer = document.querySelector('.app');
+        if (appContainer) {
+            observer.observe(appContainer, {
+                childList: true,
+                subtree: true,
+                attributes: true
+            });
+        }
+    }
 });
