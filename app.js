@@ -86,6 +86,91 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Track page load time for engagement metrics
+    const pageLoadTime = Date.now();
+
+    // Generate or retrieve session ID
+    function getSessionId() {
+        let sessionId = sessionStorage.getItem('flychain_session_id');
+        if (!sessionId) {
+            sessionId = 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            sessionStorage.setItem('flychain_session_id', sessionId);
+        }
+        return sessionId;
+    }
+
+    // Parse UTM parameters from URL
+    function getUtmParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            utmSource: params.get('utm_source') || '',
+            utmMedium: params.get('utm_medium') || '',
+            utmCampaign: params.get('utm_campaign') || '',
+            utmContent: params.get('utm_content') || '',
+            utmTerm: params.get('utm_term') || ''
+        };
+    }
+
+    // Track first benchmark check in Zapier (silent, no user input required)
+    async function trackFirstBenchmarkCheck() {
+        if (!ZAPIER_WEBHOOK_URL || ZAPIER_WEBHOOK_URL.includes('REPLACE_WITH_YOUR')) {
+            console.warn('Zapier Webhook URL not configured.');
+            return;
+        }
+
+        const data = window.ABA_DATA || {};
+        const names = window.STATE_NAMES || {};
+        const utmParams = getUtmParams();
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        const payload = {
+            // Event info
+            event: 'first_benchmark_check',
+            timestamp: new Date().toISOString(),
+            source: 'ABA Rate Benchmark Tool',
+
+            // User inputs
+            state: selectedState,
+            stateName: names[selectedState] || selectedState,
+            cptCode: selectedCpt,
+            cptDescription: data[selectedCpt]?.description || '',
+            billingRate: billingInput.value,
+
+            // Device & browser info
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language,
+            screenWidth: window.screen.width,
+            screenHeight: window.screen.height,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            isMobile: isMobile,
+
+            // Traffic attribution
+            referrer: document.referrer || 'direct',
+            pageUrl: window.location.href,
+            ...utmParams,
+
+            // Session context
+            sessionId: getSessionId(),
+            timeOnPageSeconds: Math.round((Date.now() - pageLoadTime) / 1000)
+        };
+
+        try {
+            await fetch(ZAPIER_WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            console.log('First benchmark check tracked via Zapier.');
+        } catch (error) {
+            console.error('Error tracking first benchmark check:', error);
+        }
+    }
+
     // Format currency
     function formatCurrency(amount) {
         return '$' + parseFloat(amount).toFixed(2);
@@ -130,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         validateForm();
     });
 
+
     // CPT code select handler
     cptInput.addEventListener('change', (e) => {
         selectedCpt = e.target.value;
@@ -138,6 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
             cptDescription.textContent = data[selectedCpt].description;
             cptDescription.classList.add('visible');
             cptInput.classList.add('valid');
+
+            // 🔥 Track this CPT selection in Zapier
+            trackCptSelection(selectedCpt);
         } else {
             console.warn('Review: CPT Code not found in data:', selectedCpt);
             cptDescription.textContent = 'Select a valid code to see description.';
@@ -173,6 +262,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const analysisCount = getAnalysisCount();
         console.log('Button Clicked. Count:', analysisCount, 'Email:', hasUserEmail());
+
+        // 🔥 Track first benchmark check via Zapier (silent, no user input)
+        if (analysisCount === 0) {
+            trackFirstBenchmarkCheck();
+        }
 
         // Email gate: if second+ analysis and no email, show modal
         if (analysisCount >= 1 && !hasUserEmail()) {
