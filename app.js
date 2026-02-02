@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailModal = document.getElementById('email-modal');
     const emailForm = document.getElementById('email-form');
     const emailInput = document.getElementById('email-input');
+    const businessNameInput = document.getElementById('business-name-input');
 
 
 
@@ -55,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Send data to Zapier
-    async function sendToZapier(email) {
+    async function sendToZapier(email, businessName) {
         if (!ZAPIER_WEBHOOK_URL || ZAPIER_WEBHOOK_URL.includes('REPLACE_WITH_YOUR')) {
             console.warn('Zapier Webhook URL not configured.');
             return;
@@ -63,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const payload = {
             email: email,
+            businessName: businessName || '',
             timestamp: new Date().toISOString(),
             source: 'ABA Rate Benchmark Tool',
             state: selectedState,
@@ -289,10 +291,14 @@ document.addEventListener('DOMContentLoaded', () => {
     emailForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = emailInput.value.trim();
+        const businessName = businessNameInput ? businessNameInput.value.trim() : '';
         if (email) {
             localStorage.setItem('flychain_user_email', email);
+            if (businessName) {
+                localStorage.setItem('flychain_business_name', businessName);
+            }
             emailModal.classList.add('hidden');
-            sendToZapier(email); // Trigger Zapier push
+            sendToZapier(email, businessName); // Trigger Zapier push with business name
             incrementAnalysisCount();
             try {
                 showResults();

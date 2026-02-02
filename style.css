@@ -1627,6 +1627,23 @@ body {
     box-shadow: 0 8px 24px var(--primary-glow);
 }
 
+.email-disclaimer {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 16px;
+    text-align: center;
+}
+
+.email-disclaimer a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.email-disclaimer a:hover {
+    text-decoration: underline;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
