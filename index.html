@@ -75,14 +75,24 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="billing-amount" class="input-label">
-                        <span class="label-icon">💰</span>
-                        Your Contracted Rate (Per 15-Min Unit)
-                    </label>
-                    <div class="currency-input">
-                        <span class="currency-symbol">$</span>
-                        <input type="text" id="billing-amount" class="input-field input-currency" placeholder="0.00"
-                            inputmode="decimal">
+                    <div class="segmented-switch">
+                        <div class="switch-slider" id="switch-slider"></div>
+                        <button type="button" class="switch-btn active" id="btn-state-avg">State Averages</button>
+                        <button type="button" class="switch-btn" id="btn-compare-rates">Compare Rates</button>
+                    </div>
+                </div>
+
+                <div class="optional-rate-container hidden" id="optional-rate-container">
+                    <div class="input-group">
+                        <label for="billing-amount" class="input-label">
+                            <span class="label-icon">💰</span>
+                            Your Contracted Rate (Optional)
+                        </label>
+                        <div class="currency-input">
+                            <span class="currency-symbol">$</span>
+                            <input type="text" id="billing-amount" class="input-field input-currency" placeholder="0.00"
+                                inputmode="decimal">
+                        </div>
                     </div>
                 </div>
 

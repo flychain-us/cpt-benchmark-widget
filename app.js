@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailInput = document.getElementById('email-input');
     const businessNameInput = document.getElementById('business-name-input');
 
+    // Switch elements
+    const switchSlider = document.getElementById('switch-slider');
+    const btnStateAvg = document.getElementById('btn-state-avg');
+    const btnCompareRates = document.getElementById('btn-compare-rates');
+    const optionalRateContainer = document.getElementById('optional-rate-container');
+
 
 
     // Populate state dropdown
@@ -193,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const stateValid = selectedState !== null;
         const cptValid = selectedCpt !== null;
         const billingVal = parseFloat(billingInput.value);
-        const billingValid = !isNaN(billingVal) && billingVal > 0;
+        const billingValid = billingInput.value.trim() === '' || (!isNaN(billingVal) && billingVal > 0);
 
         console.log('Form Validation:', {
             state: selectedState,
@@ -203,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
             checks: { stateValid, cptValid, billingValid }
         });
 
-        compareBtn.disabled = !(stateValid && cptValid && billingValid);
+        compareBtn.disabled = !(stateValid && cptValid);
     }
 
     // State select handler
@@ -252,6 +258,29 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.value = value;
         validateForm();
     });
+
+    // Segmented Switch logic
+    if (btnStateAvg && btnCompareRates && switchSlider && optionalRateContainer) {
+        const updateSwitch = (mode) => {
+            if (mode === 'compare') {
+                switchSlider.style.transform = 'translateX(100%)';
+                btnCompareRates.classList.add('active');
+                btnStateAvg.classList.remove('active');
+                optionalRateContainer.classList.remove('hidden');
+            } else {
+                switchSlider.style.transform = 'translateX(0)';
+                btnStateAvg.classList.add('active');
+                btnCompareRates.classList.remove('active');
+                optionalRateContainer.classList.add('hidden');
+                billingInput.value = ''; // Clear input when switching back
+                validateForm();
+            }
+            postHeight();
+        };
+
+        btnStateAvg.addEventListener('click', () => updateSwitch('state'));
+        btnCompareRates.addEventListener('click', () => updateSwitch('compare'));
+    }
 
     // Compare button handler
     compareBtn.addEventListener('click', () => {
@@ -323,7 +352,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const stats = data[selectedCpt].percentiles[selectedState];
-        const userRate = parseFloat(billingInput.value);
+        const rawRate = billingInput.value.trim();
+        const userRate = rawRate !== '' ? parseFloat(rawRate) : null;
         const stateName = names[selectedState] || selectedState;
 
         if (!stats) {
@@ -356,7 +386,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update hero rate display
         setSafeText('results-state', stateName);
         setSafeText('results-cpt', selectedCpt);
-        setSafeText('your-rate', formatCurrency(userRate));
+
+        const yourRateCard = document.getElementById('your-rate-card');
+        if (userRate !== null) {
+            setSafeText('your-rate', formatCurrency(userRate));
+            if (yourRateCard) {
+                yourRateCard.style.display = 'flex';
+                // Remove hidden/compact classes if they exist from previous runs
+                yourRateCard.parentElement?.classList.remove('two-up');
+                yourRateCard.parentElement?.classList.add('three-up');
+            }
+        } else {
+            // Hide your rate card if no rate provided
+            if (yourRateCard) {
+                yourRateCard.style.display = 'none';
+                // Adjust layout for 2 cards
+                yourRateCard.parentElement?.classList.remove('three-up');
+                yourRateCard.parentElement?.classList.add('two-up');
+            }
+        }
 
         // Update comparison card values
         setSafeText('state-avg-value', formatCurrency(median));
@@ -366,15 +414,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const deltaEl = document.getElementById('rate-delta');
         if (deltaEl) {
             deltaEl.classList.remove('positive', 'negative', 'neutral');
-            if (delta > 0) {
-                deltaEl.textContent = `+${formatCurrency(delta)}`;
-                deltaEl.classList.add('positive');
-            } else if (delta < 0) {
-                deltaEl.textContent = `${formatCurrency(delta)}`;
-                deltaEl.classList.add('negative');
+            if (userRate !== null) {
+                const delta = userRate - median;
+                if (delta > 0) {
+                    deltaEl.textContent = `+${formatCurrency(delta)}`;
+                    deltaEl.classList.add('positive');
+                } else if (delta < 0) {
+                    deltaEl.textContent = `${formatCurrency(delta)}`;
+                    deltaEl.classList.add('negative');
+                } else {
+                    deltaEl.textContent = `= median`;
+                    deltaEl.classList.add('neutral');
+                }
+                deltaEl.style.display = 'inline-block';
             } else {
-                deltaEl.textContent = `= median`;
-                deltaEl.classList.add('neutral');
+                deltaEl.style.display = 'none';
             }
         }
 
@@ -390,16 +444,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const flychainCta = document.getElementById('flychain-cta');
         const ctaHeadline = document.getElementById('cta-headline');
         const ctaSubtext = document.getElementById('cta-subtext');
-        const yourRateCard = document.getElementById('your-rate-card');
 
         if (insightCard) insightCard.classList.remove('above', 'below', 'on-target');
         if (flychainCta) flychainCta.classList.remove('top-performer', 'needs-help');
         if (yourRateCard) yourRateCard.classList.remove('above', 'below', 'on-target');
 
         // Three-tier market position logic
-        // Note: For many ABA codes, baseline rates (e.g., Medicaid fee schedules) account for a large portion 
-        // of the market (often 5th-50th percentile). We use median as the key comparison point.
-        if (userRate > stats.p75) {
+        if (userRate === null) {
+            // No rate provided - simplified insight
+            if (insightCard) insightCard.classList.add('on-target');
+            if (insightIcon) insightIcon.textContent = '📊';
+            if (insightTitle) insightTitle.textContent = 'Market Overview';
+            if (insightText) insightText.textContent = `Industry benchmarks for ${selectedCpt} in ${stateName}. Median reimbursement is ${formatCurrency(median)}, while top performers reach ${formatCurrency(highestRate)}.`;
+
+            if (ctaHeadline) ctaHeadline.textContent = `📍 Want to see what local clinics are charging?`;
+            if (ctaSubtext) ctaSubtext.textContent = "Get detailed rate breakdowns for ABA providers in your area. Book a quick call to see how you compare to clinics near you.";
+        } else if (userRate > stats.p75) {
             // Above 75th percentile - Above Market
             if (insightCard) insightCard.classList.add('above');
             if (yourRateCard) yourRateCard.classList.add('above');

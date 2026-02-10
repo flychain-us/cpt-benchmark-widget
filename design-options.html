@@ -4,754 +4,484 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualization Options | ABA Rate Benchmark</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>UI Design Options | ABA Rate Benchmark</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0f0f12;
-            --bg-secondary: #1a1a21;
-            --bg-card: #222230;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0b0;
-            --accent-green: #22c55e;
-            --accent-yellow: #eab308;
-            --accent-orange: #f97316;
-            --accent-red: #ef4444;
-            --accent-purple: #8b5cf6;
-            --gradient-gauge: linear-gradient(90deg, #ff4444 0%, #ffa500 25%, #ffdd00 50%, #90EE90 75%, #22c55e 100%);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --primary: #6459FF;
+            --primary-start: #8958FF;
+            --primary-end: #6459FF;
+            --primary-glow: rgba(100, 89, 255, 0.15);
+            --primary-dark: #110823;
+            --background: #FAF7F4;
+            --white: #ffffff;
+            --text-muted: #858eb3;
+            --accent-teal: #0F8B7A;
+            --accent-coral: #FFA348;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            padding: 2rem;
-            min-height: 100vh;
+            font-family: 'Barlow', sans-serif;
+            background-color: var(--background);
+            color: var(--primary-dark);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .page-header {
+        h1 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
             text-align: center;
-            margin-bottom: 3rem;
         }
 
-        .page-header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #fff 0%, #a0a0b0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 50px;
+            text-align: center;
+            max-width: 600px;
         }
 
-        .page-header p {
-            color: var(--text-secondary);
-        }
-
-        .options-grid {
+        .showcase-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 40px;
+            width: 100%;
+            max-width: 1200px;
         }
 
         .option-card {
-            background: var(--bg-secondary);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.03);
         }
 
-        .option-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .option-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-glow);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         .option-title {
+            font-family: 'Manrope', sans-serif;
             font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--accent-purple);
+            font-weight: 800;
         }
 
-        .option-badge {
-            background: rgba(139, 92, 246, 0.15);
-            color: var(--accent-purple);
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        /* =========================================
-           OPTION 1: Percentile Ladder
-           ========================================= */
-        .percentile-ladder {
+        .preview-area {
+            background: #FDFBFA;
+            border: 1px dashed #E9E8EB;
+            border-radius: var(--radius-md);
+            padding: 24px;
+            min-height: 120px;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            justify-content: center;
         }
 
-        .percentile-row {
+        /* --- Option 1: The Modern Accordion --- */
+        .opt-1-trigger {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 1rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            transition: all 0.2s;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--white);
+            border: 1px solid var(--primary-glow);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition);
         }
 
-        .percentile-row.highlighted {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.1));
-            border: 1px solid var(--accent-purple);
+        .opt-1-trigger:hover {
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
 
-        .percentile-row.you-marker {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
-            border: 1px solid var(--accent-green);
-        }
-
-        .percentile-label {
-            font-size: 0.85rem;
+        .opt-1-label {
             font-weight: 600;
-            color: var(--text-secondary);
-            width: 80px;
+            font-size: 0.9rem;
+            color: var(--primary);
         }
 
-        .percentile-bar-container {
-            flex: 1;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+        .opt-1-icon {
+            width: 20px;
+            height: 20px;
+            transition: transform var(--transition);
+        }
+
+        .opt-1-content {
+            max-height: 0;
             overflow: hidden;
+            transition: all var(--transition);
+            opacity: 0;
         }
 
-        .percentile-bar {
-            height: 100%;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+        .opt-1-active .opt-1-content {
+            max-height: 100px;
+            opacity: 1;
+            margin-top: 16px;
         }
 
-        .percentile-value {
-            font-size: 0.95rem;
-            font-weight: 700;
-            width: 70px;
-            text-align: right;
+        .opt-1-active .opt-1-icon {
+            transform: rotate(180deg);
         }
 
-        .your-rate-tag {
+        /* --- Option 2: The Floating Capsule --- */
+        .opt-2-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .opt-2-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.25rem;
-            background: var(--accent-green);
-            color: #000;
-            padding: 0.15rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+            color: white;
+            border-radius: 100px;
+            font-size: 0.85rem;
             font-weight: 700;
-            margin-left: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* =========================================
-           OPTION 2: Donut Chart with Percentile Position
-           ========================================= */
-        .donut-container {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
+        .opt-2-badge:hover {
+            transform: scale(1.05);
         }
 
-        .donut-chart {
-            position: relative;
-            width: 180px;
-            height: 180px;
-        }
-
-        .donut-svg {
-            transform: rotate(-90deg);
-        }
-
-        .donut-track {
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.1);
-            stroke-width: 16;
-        }
-
-        .donut-progress {
-            fill: none;
-            stroke-width: 16;
-            stroke-linecap: round;
-            stroke-dasharray: 439.8;
-            stroke-dashoffset: 154;
-            /* 65% position */
-            stroke: url(#gradient);
-        }
-
-        .donut-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .donut-percentile {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #22c55e, #4ade80);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .donut-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .donut-stats {
-            flex: 1;
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .stat-item:last-child {
-            border-bottom: none;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .stat-value {
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        .stat-value.highlight {
-            color: var(--accent-green);
-        }
-
-        /* =========================================
-           OPTION 3: Horizontal Segment Bar
-           ========================================= */
-        .segment-visualization {
-            padding: 1rem 0;
-        }
-
-        .segment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 1rem;
-        }
-
-        .segment-your-rate {
-            font-size: 2rem;
-            font-weight: 800;
-        }
-
-        .segment-percentile-badge {
-            background: linear-gradient(135deg, #22c55e, #4ade80);
-            color: #000;
-            padding: 0.5rem 1rem;
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        .segment-bar-wrapper {
-            position: relative;
-            margin: 2rem 0;
-        }
-
-        .segment-bar {
-            display: flex;
-            height: 48px;
-            border-radius: 12px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .segment {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: rgba(0, 0, 0, 0.7);
-            transition: all 0.2s;
-        }
-
-        .segment.bottom-5 {
-            background: #ef4444;
-            width: 5%;
-        }
-
-        .segment.p5-25 {
-            background: #f97316;
-            width: 20%;
-        }
-
-        .segment.p25-50 {
-            background: #eab308;
-            width: 25%;
-        }
-
-        .segment.p50-75 {
-            background: #84cc16;
-            width: 25%;
-        }
-
-        .segment.p75-95 {
-            background: #22c55e;
-            width: 20%;
-        }
-
-        .segment.top-5 {
-            background: #14b8a6;
-            width: 5%;
-        }
-
-        .segment.active {
-            box-shadow: inset 0 0 0 3px #fff;
-        }
-
-        .segment-pointer {
-            position: absolute;
-            top: -30px;
-            left: 72%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .pointer-label {
-            background: var(--bg-card);
-            padding: 0.25rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border: 1px solid var(--accent-green);
-            white-space: nowrap;
-        }
-
-        .pointer-arrow {
+        .opt-2-input-wrap {
             width: 0;
             height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-top: 8px solid var(--accent-green);
-            margin-top: -1px;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .segment-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 0.5rem;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
+        .opt-2-active .opt-2-badge {
+            transform: scale(0.9);
+            opacity: 0;
+            pointer-events: none;
         }
 
-        .segment-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            margin-top: 1.5rem;
+        .opt-2-active .opt-2-input-wrap {
+            width: 100%;
+            height: auto;
+            opacity: 1;
         }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
+        /* --- Option 3: The Premium Slide-Down --- */
+        .opt-3-card {
+            border: 2px solid transparent;
+            background: linear-gradient(var(--white), var(--white)) padding-box,
+                linear-gradient(135deg, var(--primary-start), var(--accent-coral)) border-box;
+            border-radius: var(--radius-md);
+            padding: 16px;
+            cursor: pointer;
+            transition: transform var(--transition);
         }
 
-        .legend-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
+        .opt-3-card:hover {
+            transform: translateY(-2px);
         }
 
-        /* =========================================
-           OPTION 4: Comparison Cards with Sparkline
-           ========================================= */
-        .cards-visualization {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .rate-card {
+        .opt-3-header {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1.25rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 12px;
         }
 
-        .rate-card.your-card {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
-            border: 1px solid var(--accent-purple);
+        .opt-3-sparkle {
+            font-size: 1.2rem;
         }
 
-        .rate-icon {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            font-size: 1.5rem;
-        }
-
-        .rate-card.your-card .rate-icon {
-            background: var(--accent-purple);
-        }
-
-        .rate-info {
-            flex: 1;
-        }
-
-        .rate-title {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.25rem;
-        }
-
-        .rate-amount {
-            font-size: 1.5rem;
-            font-weight: 800;
-        }
-
-        .rate-comparison {
-            text-align: right;
-        }
-
-        .rate-diff {
-            font-size: 1rem;
+        .opt-3-text {
             font-weight: 700;
-        }
-
-        .rate-diff.positive {
-            color: var(--accent-green);
-        }
-
-        .rate-diff.negative {
-            color: var(--accent-red);
-        }
-
-        .rate-diff-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .distribution-chart {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-        }
-
-        .chart-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
             display: block;
         }
 
-        .mini-distribution {
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            height: 60px;
+        .opt-3-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
         }
 
-        .dist-bar {
-            flex: 1;
-            background: rgba(139, 92, 246, 0.3);
-            border-radius: 4px 4px 0 0;
+        .opt-3-body {
+            display: none;
+            margin-top: 12px;
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+        }
+
+        /* --- Option 4: The Animated Switch --- */
+        .opt-4-switch-group {
+            display: flex;
+            background: #F0F0F3;
+            padding: 4px;
+            border-radius: 100px;
             position: relative;
+            width: fit-content;
+            margin: 0 auto;
         }
 
-        .dist-bar.highlighted {
-            background: var(--accent-purple);
+        .opt-4-btn {
+            padding: 8px 20px;
+            border-radius: 100px;
+            border: none;
+            background: transparent;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            z-index: 1;
+            transition: color var(--transition);
         }
 
-        .dist-bar.you-position::after {
-            content: '📍';
+        .opt-4-btn.active {
+            color: var(--primary-dark);
+        }
+
+        .opt-4-slider {
             position: absolute;
-            top: -24px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1rem;
+            top: 4px;
+            left: 4px;
+            height: calc(100% - 8px);
+            width: calc(50% - 4px);
+            background: white;
+            border-radius: 100px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform var(--transition);
         }
 
-        .chart-x-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 0.5rem;
-            font-size: 0.7rem;
-            color: var(--text-secondary);
+        .opt-4-input-container {
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.4s ease;
         }
 
-        @media (max-width: 1024px) {
-            .options-grid {
-                grid-template-columns: 1fr;
+        /* --- Option 5: The "Magic Link" --- */
+        .opt-5-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-bottom: 2px solid var(--primary-glow);
+            padding-bottom: 2px;
+            transition: all var(--transition);
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .opt-5-link:hover {
+            border-bottom-color: var(--primary);
+            background: var(--primary-glow);
+        }
+
+        .opt-5-input-wrap {
+            display: none;
+            animation: slideUp 0.4s ease;
+        }
+
+        /* Reusable Input Style */
+        .input-box {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 2px solid #E9E8EB;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .input-box:focus {
+            border-color: var(--primary);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="page-header">
-        <h1>📊 Visualization Design Options</h1>
-        <p>Choose the best way to present percentile-based rate data</p>
-    </div>
 
-    <div class="options-grid">
-        <!-- OPTION 1: Percentile Ladder -->
-        <div class="option-card">
-            <div class="option-header">
-                <span class="option-title">Option 1: Percentile Ladder</span>
-                <span class="option-badge">Detailed View</span>
-            </div>
+    <h1>UI/UX Inspiration</h1>
+    <p class="subtitle">5 premium ways to handle the optional "Compare Your Own Rate" feature. Each focusing on reducing
+        baseline friction while encouraging engagement.</p>
 
-            <div class="percentile-ladder">
-                <div class="percentile-row">
-                    <span class="percentile-label">95th</span>
-                    <div class="percentile-bar-container">
-                        <div class="percentile-bar" style="width: 100%"></div>
-                    </div>
-                    <span class="percentile-value">$29.18</span>
-                </div>
-                <div class="percentile-row">
-                    <span class="percentile-label">75th</span>
-                    <div class="percentile-bar-container">
-                        <div class="percentile-bar" style="width: 80%"></div>
-                    </div>
-                    <span class="percentile-value">$27.30</span>
-                </div>
-                <div class="percentile-row you-marker">
-                    <span class="percentile-label">You </span>
-                    <div class="percentile-bar-container">
-                        <div class="percentile-bar"
-                            style="width: 72%; background: linear-gradient(90deg, #22c55e, #4ade80)"></div>
-                    </div>
-                    <span class="percentile-value">$26.00 <span class="your-rate-tag">~72nd</span></span>
-                </div>
-                <div class="percentile-row highlighted">
-                    <span class="percentile-label">50th (Median)</span>
-                    <div class="percentile-bar-container">
-                        <div class="percentile-bar" style="width: 60%"></div>
-                    </div>
-                    <span class="percentile-value">$24.53</span>
-                </div>
-                <div class="percentile-row">
-                    <span class="percentile-label">25th</span>
-                    <div class="percentile-bar-container">
-                        <div class="percentile-bar" style="width: 40%"></div>
-                    </div>
-                    <span class="percentile-value">$23.20</span>
-                </div>
-                <div class="percentile-row">
-                    <span class="percentile-label">5th</span>
-                    <div class="percentile-bar-container">
-                        <div class="percentile-bar" style="width: 20%"></div>
-                    </div>
-                    <span class="percentile-value">$22.20</span>
-                </div>
-            </div>
-        </div>
+    <div class="showcase-grid">
 
-        <!-- OPTION 2: Donut Chart -->
-        <div class="option-card">
-            <div class="option-header">
-                <span class="option-title">Option 2: Percentile Ring</span>
-                <span class="option-badge">Visual Impact</span>
-            </div>
-
-            <div class="donut-container">
-                <div class="donut-chart">
-                    <svg class="donut-svg" width="180" height="180" viewBox="0 0 180 180">
-                        <defs>
-                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stop-color="#ef4444" />
-                                <stop offset="50%" stop-color="#eab308" />
-                                <stop offset="100%" stop-color="#22c55e" />
-                            </linearGradient>
-                        </defs>
-                        <circle class="donut-track" cx="90" cy="90" r="70" />
-                        <circle class="donut-progress" cx="90" cy="90" r="70" />
+        <!-- Option 1 -->
+        <div class="option-card" id="card-1">
+            <span class="option-tag">Option 1</span>
+            <div class="option-title">The Animated Accordion</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">A clean, familiar pattern that keeps the UI compact
+                until needed.</p>
+            <div class="preview-area">
+                <div class="opt-1-trigger" onclick="toggleOption(1)">
+                    <span class="opt-1-label">Compare your own rate</span>
+                    <svg class="opt-1-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
-                    <div class="donut-center">
-                        <div class="donut-percentile">72<sup style="font-size: 1rem">nd</sup></div>
-                        <div class="donut-label">percentile</div>
-                    </div>
                 </div>
+                <div class="opt-1-content">
+                    <input type="text" class="input-box" placeholder="$0.00">
+                </div>
+            </div>
+        </div>
 
-                <div class="donut-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Your Rate</span>
-                        <span class="stat-value highlight">$26.00</span>
+        <!-- Option 2 -->
+        <div class="option-card" id="card-2">
+            <span class="option-tag">Option 2</span>
+            <div class="option-title">The Floating Capsule</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">A high-energy, "app-like" reveal that feels premium
+                and tactile.</p>
+            <div class="preview-area">
+                <div class="opt-2-wrapper">
+                    <div class="opt-2-badge" onclick="toggleOption(2)">
+                        <span>⚡️ Compare Your Rate</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">State Median</span>
-                        <span class="stat-value">$24.53</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">vs. Median</span>
-                        <span class="stat-value highlight">+$1.47 (+6%)</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Range (5th-95th)</span>
-                        <span class="stat-value">$22.20 - $29.18</span>
+                    <div class="opt-2-input-wrap">
+                        <label style="font-size: 0.75rem; font-weight: 700; margin-bottom: 4px; display: block;">YOUR
+                            RATE</label>
+                        <input type="text" class="input-box" placeholder="$0.00">
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- OPTION 3: Segment Bar -->
-        <div class="option-card">
-            <div class="option-header">
-                <span class="option-title">Option 3: Distribution Segments</span>
-                <span class="option-badge">Clear Tiers</span>
-            </div>
-
-            <div class="segment-visualization">
-                <div class="segment-header">
-                    <span class="segment-your-rate">$26.00</span>
-                    <span class="segment-percentile-badge">72nd Percentile</span>
-                </div>
-
-                <div class="segment-bar-wrapper">
-                    <div class="segment-pointer">
-                        <div class="pointer-label">📍 You: $26.00</div>
-                        <div class="pointer-arrow"></div>
+        <!-- Option 3 -->
+        <div class="option-card" id="card-3">
+            <span class="option-tag">Option 3</span>
+            <div class="option-title">The Feature Card</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Treats the comparison as a premium "value-add"
+                tool.</p>
+            <div class="preview-area">
+                <div class="opt-3-card" onclick="toggleOption(3)">
+                    <div class="opt-3-header">
+                        <span class="opt-3-sparkle">💎</span>
+                        <div>
+                            <span class="opt-3-text">Unlock Comparison</span>
+                            <span class="opt-3-sub">See how you rank against the state.</span>
+                        </div>
                     </div>
-                    <div class="segment-bar">
-                        <div class="segment bottom-5"></div>
-                        <div class="segment p5-25">5-25th</div>
-                        <div class="segment p25-50">25-50th</div>
-                        <div class="segment p50-75">50-75th</div>
-                        <div class="segment p75-95 active">75-95th</div>
-                        <div class="segment top-5"></div>
-                    </div>
-                    <div class="segment-labels">
-                        <span>$22.20</span>
-                        <span>$23.20</span>
-                        <span>$24.53</span>
-                        <span>$27.30</span>
-                        <span>$29.18</span>
-                    </div>
-                </div>
-
-                <div class="segment-legend">
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #ef4444"></div>
-                        <span>Bottom 5%</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #f97316"></div>
-                        <span>Below Avg</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #eab308"></div>
-                        <span>Near Median</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #84cc16"></div>
-                        <span>Above Avg</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #22c55e"></div>
-                        <span>High Performer</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #14b8a6"></div>
-                        <span>Top 5%</span>
+                    <div class="opt-3-body" id="opt-3-body">
+                        <input type="text" class="input-box" placeholder="Enter your rate...">
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- OPTION 4: Comparison Cards -->
-        <div class="option-card">
-            <div class="option-header">
-                <span class="option-title">Option 4: Cards + Distribution</span>
-                <span class="option-badge">Clean & Simple</span>
-            </div>
-
-            <div class="cards-visualization">
-                <div class="rate-card your-card">
-                    <div class="rate-icon">📍</div>
-                    <div class="rate-info">
-                        <div class="rate-title">Your Rate</div>
-                        <div class="rate-amount">$26.00</div>
-                    </div>
-                    <div class="rate-comparison">
-                        <div class="rate-diff positive">+6%</div>
-                        <div class="rate-diff-label">vs median</div>
-                    </div>
+        <!-- Option 4 -->
+        <div class="option-card" id="card-4">
+            <span class="option-tag">Option 4</span>
+            <div class="option-title">The Segmented Switch</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Clear choice-driven UI. Most explicit and easy to
+                understand.</p>
+            <div class="preview-area">
+                <div class="opt-4-switch-group">
+                    <div class="opt-4-slider" id="opt-4-slider"></div>
+                    <button class="opt-4-btn active" onclick="switchOpt(0)">Standard</button>
+                    <button class="opt-4-btn" onclick="switchOpt(1)">Compare</button>
                 </div>
-
-                <div class="rate-card">
-                    <div class="rate-icon">📊</div>
-                    <div class="rate-info">
-                        <div class="rate-title">State Median (50th)</div>
-                        <div class="rate-amount">$24.53</div>
-                    </div>
-                </div>
-
-                <div class="distribution-chart">
-                    <span class="chart-label">Rate Distribution in Arizona</span>
-                    <div class="mini-distribution">
-                        <!-- Heights represent frequency at each percentile range -->
-                        <div class="dist-bar" style="height: 20%"></div>
-                        <div class="dist-bar" style="height: 35%"></div>
-                        <div class="dist-bar" style="height: 55%"></div>
-                        <div class="dist-bar highlighted" style="height: 80%"></div>
-                        <div class="dist-bar highlighted" style="height: 100%"></div>
-                        <div class="dist-bar highlighted" style="height: 90%"></div>
-                        <div class="dist-bar highlighted you-position" style="height: 70%"></div>
-                        <div class="dist-bar" style="height: 50%"></div>
-                        <div class="dist-bar" style="height: 30%"></div>
-                        <div class="dist-bar" style="height: 15%"></div>
-                    </div>
-                    <div class="chart-x-labels">
-                        <span>$22</span>
-                        <span>$24</span>
-                        <span>$26</span>
-                        <span>$28</span>
-                        <span>$30</span>
-                    </div>
+                <div class="opt-4-input-container" id="opt-4-input">
+                    <input type="text" class="input-box" placeholder="$0.00 / unit">
                 </div>
             </div>
         </div>
+
+        <!-- Option 5 -->
+        <div class="option-card" id="card-5">
+            <span class="option-tag">Option 5</span>
+            <div class="option-title">The Magic Link</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Minimalist and integrated. Best for a native,
+                light-weight look.</p>
+            <div class="preview-area">
+                <div id="opt-5-trigger">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Checking benchmarks... <span
+                            class="opt-5-link" onclick="toggleOption(5)">Compare mine too</span></p>
+                </div>
+                <div class="opt-5-input-wrap" id="opt-5-input">
+                    <input type="text" class="input-box" placeholder="Your rate ($)">
+                </div>
+            </div>
+        </div>
+
     </div>
+
+    <script>
+        function toggleOption(id) {
+            const card = document.getElementById('card-' + id);
+
+            if (id === 1) {
+                card.classList.toggle('opt-1-active');
+            } else if (id === 2) {
+                card.classList.toggle('opt-2-active');
+            } else if (id === 3) {
+                const body = document.getElementById('opt-3-body');
+                body.style.display = body.style.display === 'block' ? 'none' : 'block';
+            } else if (id === 5) {
+                document.getElementById('opt-5-trigger').style.display = 'none';
+                document.getElementById('opt-5-input').style.display = 'block';
+            }
+        }
+
+        function switchOpt(index) {
+            const slider = document.getElementById('opt-4-slider');
+            const btns = document.querySelectorAll('.opt-4-btn');
+            const input = document.getElementById('opt-4-input');
+
+            slider.style.transform = `translateX(${index * 100}%)`;
+            btns.forEach((btn, i) => {
+                if (i === index) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            input.style.display = index === 1 ? 'block' : 'none';
+        }
+    </script>
 </body>
 
 </html>
