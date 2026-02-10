@@ -1504,14 +1504,9 @@ body {
         padding: 28px;
     }
 
-    .cta-content {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .cta-text {
-        flex: 1;
+    .cta-button {
+        width: auto;
+        align-self: center;
     }
 }
 
