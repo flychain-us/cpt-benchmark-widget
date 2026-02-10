@@ -233,8 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cptDescription.classList.add('visible');
             cptInput.classList.add('valid');
 
-            // 🔥 Track this CPT selection in Zapier
-            trackCptSelection(selectedCpt);
+            // 🔥 Track this CPT selection in Zapier (Placeholder removed as not defined)
         } else {
             console.warn('Review: CPT Code not found in data:', selectedCpt);
             cptDescription.textContent = 'Select a valid code to see description.';
@@ -258,6 +257,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.value = value;
         validateForm();
     });
+
+    // Initial validation check
+    validateForm();
 
     // Segmented Switch logic
     if (btnStateAvg && btnCompareRates && switchSlider && optionalRateContainer) {
@@ -299,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 🔥 Track subsequent benchmark check via Meta Pixel only (no Zapier) and send analysis count and email to parent
                 window.parent.postMessage({ type: 'fb-pixel-event', event: 'Subsequent CPT Benchmark Check', analysisCount: analysisCount, email: hasUserEmail() }, '*');
             }
-            
+
         }
 
         // Email gate: if second+ analysis and no email, show modal
